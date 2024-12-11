@@ -7,5 +7,5 @@ jobs:
       - name: install adk
         shell: cmd
         run: |
-          curl -LO "https://go.microsoft.com/fwlink/?linkid=2289980"
+          curl -Lo adksetup.exe "https://go.microsoft.com/fwlink/?linkid=2289980"
           start /wait adksetup.exe /q /norestart /ceip off /features OptionId.DeploymentTools

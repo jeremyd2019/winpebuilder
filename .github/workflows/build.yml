@@ -30,7 +30,7 @@ jobs:
         run: |
           CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
           CALL copype arm64 ${{ github.workspace }}\winpe_arm64
-      -name: makepemedia
+      - name: makepemedia
         shell: cmd
         run: |
           CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"

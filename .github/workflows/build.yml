@@ -9,3 +9,8 @@ jobs:
         run: |
           curl -Lo adksetup.exe "https://go.microsoft.com/fwlink/?linkid=2289980"
           start /wait adksetup.exe /q /norestart /ceip off /features OptionId.DeploymentTools
+      - name: install winpe
+        shell: cmd
+        run: |
+          curl -Lo adkwinpesetup.exe "https://go.microsoft.com/fwlink/?linkid=2289981"
+          start /wait adkwinpesetup.exe /q /norestart /ceip off /features OptionId.WindowsPreinstallationEnvironment

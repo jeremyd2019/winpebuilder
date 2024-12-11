@@ -14,11 +14,26 @@ jobs:
         run: |
           curl -Lo adkwinpesetup.exe "https://go.microsoft.com/fwlink/?linkid=2289981"
           start /wait adkwinpesetup.exe /q /norestart /ceip off /features OptionId.WindowsPreinstallationEnvironment
-      - name: winpe
+      - name: get virtio iso
+        shell: cmd
+        run: |
+          curl -LO https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso
+          mkdir virtio-win
+          tar -C virtio-win -xvf virtio-win.iso
+      - name: gather arm64 drivers
+        shell: bash
+        run: |
+          mkdir arm64
+          cd virtio-win && find . -path '*/w11/ARM64/*' -exec cp --parents '{}' ../arm64 \;
+      - name: copype
         shell: cmd
         run: |
           CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
-          CALL copype arm64 d:\winpe_arm64
+          CALL copype arm64 ${{ github.workspace }}\winpe_arm64
+      -name: makepemedia
+        shell: cmd
+        run: |
+          CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
           CALL MakeWinPEMedia /ISO D:\winpe_arm64 ${{ github.workspace }}\winpe_arm64.iso
       - uses: actions/upload-artifact@v4
         with:

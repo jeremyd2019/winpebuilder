@@ -18,8 +18,8 @@ jobs:
         shell: cmd
         run: |
           CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
-          copype arm64 d:\winpe_arm64
-          MakeWinPEMedia /ISO D:\winpe_arm64 winpe_arm64.iso
+          CALL copype arm64 d:\winpe_arm64
+          CALL MakeWinPEMedia /ISO D:\winpe_arm64 winpe_arm64.iso
       - uses: actions/upload-artifact@v4
         with:
           path: '*.iso'

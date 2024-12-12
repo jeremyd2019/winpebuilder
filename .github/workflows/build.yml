@@ -29,13 +29,44 @@ jobs:
         shell: cmd
         run: |
           CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
+          CD /D "${{ github.workspace }}"
           CALL copype arm64 ${{ github.workspace }}\winpe_arm64
+      - name: mountpe
+        shell: cmd
+        run: |
+          CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
+          CD /D "${{ github.workspace }}"
+          DISM /Mount-Image /ImageFile:"${{ github.workspace }}\winpe_arm64\media\sources\boot.wim" /Index:1 /MountDir:"${{ github.workspace }}\mount"
+      - name: add drivers
+        shell: cmd
+        run: |
+          CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
+          CD /D "${{ github.workspace }}"
+          DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Add-Driver /Driver:"${{ github.workspace }}\arm64" /Recurse /ForceUnsigned
+      - name: add x64 optional component
+        shell: cmd
+        run: |
+          CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
+          CD /D "${{ github.workspace }}"
+          DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Add-Package /PackagePath:"%WinPERoot%\arm64\WinPE_OCs\WinPE-x64-Support.cab"
+          DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Add-Package /PackagePath:"%WinPERoot%\arm64\WinPE_OCs\en-us\WinPE-x64-Support_en-us.cab"
+      - name: set power profile
+        shell: cmd
+        run: |
+          ECHO powercfg /s 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c>>"${{ github.workspace }}\winpe_arm64\mount\windows\system32\startnet.cmd"
+      # TODO apply LCU?
+      - name: unmountpe
+        shell: cmd
+        run: |
+          CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
+          CD /D "${{ github.workspace }}"
+          DISM /Unmount-Image /MountDir:"${{ github.workspace }}\winpe_arm64\mount" /Commit
       - name: makepemedia
         shell: cmd
         run: |
           CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
-          CALL MakeWinPEMedia /ISO D:\winpe_arm64 ${{ github.workspace }}\winpe_arm64.iso
+          CD /D "${{ github.workspace }}"
+          CALL MakeWinPEMedia /ISO ${{ github.workspace }}\winpe_arm64 winpe_arm64.iso
       - uses: actions/upload-artifact@v4
         with:
-          path: '*.iso'
-          
+          path: winpe_arm64.iso

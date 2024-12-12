@@ -119,10 +119,29 @@ jobs:
           tar -Jxvf data.tar.xz
           mv usr/share/AAVMF/AAVMF_{CODE,VARS}.ms.fd .
           rm -rf usr control.tar.xz data.tar.xz debian-binary
-      - name: make empty qcow2
+      - name: make vhdx
+        shell: diskpart /s {0}
+        run: |
+          CREATE VDISK FILE="D:\win11_arm64.vhdx" MAXIMUM=8192 TYPE=EXPANDABLE
+          ATTACH VDISK
+          CLEAN
+          CREATE PARTITION PRIMARY
+          FORMAT QUICK FS=NTFS
+          ASSIGN LETTER=M
+      - name: put msys2 on vhdx
+        shell: cmd
+        run: |
+          curl -LO https://mirror.msys2.org/distrib/msys2-x86_64-latest.sfx.exe
+          msys2-x86_64-latest.sfx.exe -y -oM:\
+      - name: detach vhdx
+        shell: diskpart /s {0}
+        run: |
+          SELECT VDISK FILE="D:\win11_arm64.vhdx"
+          DETACH VDISK
+      - name: convert to qcow2
         shell: msys2 {0}
         run: |
-          qemu-img create -f qcow2 win11_arm64.qcow2 8G
+          qemu-img convert -pc -f vhdx /d/win11_arm64.vhdx -O qcow2 win11_arm64.qcow2
       - uses: actions/upload-artifact@v4
         with:
           path: |

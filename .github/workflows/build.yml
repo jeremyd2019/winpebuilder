@@ -9,6 +9,7 @@ permissions:
   contents: read
 jobs:
   build:
+    name: build
     runs-on: windows-latest
     steps:
       - name: install adk
@@ -76,7 +77,9 @@ jobs:
         run: |
           CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
           CD /D "${{ github.workspace }}"
-          DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Add-Package /PackagePath:lcu
+          REM Windows 11 24H2 wants the latest lcu specified to PackagePath
+          FOR %%i IN (lcu\*.msu) DO SET LCUMSU=%%i
+          DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Add-Package /PackagePath:%LCUMSU%
           DISM /Image:"${{ github.workspace}}\winpe_arm64\mount" /Cleanup-Image /StartComponentCleanup /ResetBase
       - name: unmountpe
         shell: cmd

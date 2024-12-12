@@ -12,6 +12,15 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: msys2/setup-msys2@v2
+        with:
+          release: false
+          update: true
+          msystem: UCRT64
+          install: mingw-w64-ucrt-x86_64-qemu-image-util
       - name: install adk
         shell: cmd
         run: |
@@ -101,6 +110,24 @@ jobs:
           CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
           CD /D "${{ github.workspace }}"
           CALL MakeWinPEMedia /ISO ${{ github.workspace }}\winpe_arm64 winpe_arm64.iso
+      - name: get qemu firmware
+        shell: bash
+        run: |
+          BSDTAR="$(cygpath -Su)/tar.exe"
+          curl -Lo qemu-efi-aarch64.deb "$(curl https://packages.debian.org/sid/all/qemu-efi-aarch64/download | sed -ne '/http:\/\/http\.us\.debian\.org/{s|^.*"http://http\.us\.\([^"]\+\)".*$|https://deb.\1|;p}')"
+          $BSDTAR -xvf qemu-efi-aarch64.deb
+          tar -Jxvf data.tar.xz
+          mv usr/share/AAVMF/AAVMF_{CODE,VARS}.ms.fd .
+          rm -rf usr control.tar.xz data.tar.xz debian-binary
+      - name: make empty qcow2
+        shell: msys2 {0}
+        run: |
+          qemu-img create -f qcow2 win11_arm64.qcow2 8G
       - uses: actions/upload-artifact@v4
         with:
-          path: winpe_arm64.iso
+          path: |
+            winpe_arm64.iso
+            AAVMF_CODE.ms.fd
+            AAVMF_VARS.ms.fd
+            qemu_aarch64_winpe.sh
+            win11_arm64.qcow2

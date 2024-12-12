@@ -36,7 +36,7 @@ jobs:
         run: |
           CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
           CD /D "${{ github.workspace }}"
-          DISM /Mount-Image /ImageFile:"${{ github.workspace }}\winpe_arm64\media\sources\boot.wim" /Index:1 /MountDir:"${{ github.workspace }}\mount"
+          DISM /Mount-Image /ImageFile:"${{ github.workspace }}\winpe_arm64\media\sources\boot.wim" /Index:1 /MountDir:"${{ github.workspace }}\winpe_arm64\mount"
       - name: add drivers
         shell: cmd
         run: |

@@ -83,6 +83,14 @@ jobs:
           CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
           CD /D "${{ github.workspace }}"
           DISM /Unmount-Image /MountDir:"${{ github.workspace }}\winpe_arm64\mount" /Commit
+      - name: optimize
+        shell: cmd
+        run: |
+          CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
+          CD /D "${{ github.workspace }}"
+          DISM /Export-Image /SourceImageFile:"${{ github.workspace }}\winpe_arm64\media\sources\boot.wim" /SourceIndex:1 /DestinationImageFile:"${{ runner.temp }}\boot.wim" /Compress:max
+          DEL "${{ github.workspace }}\winpe_arm64\media\sources\boot.wim"
+          MOVE "${{ runner.temp }}\boot.wim" "${{ github.workspace }}\winpe_arm64\media\sources\boot.wim"
       - name: makepemedia
         shell: cmd
         run: |

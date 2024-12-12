@@ -1,5 +1,10 @@
 on:
   workflow_dispatch:
+    inputs:
+      lcu:
+        type: string
+        required: false
+        description: "optional comma-delimited url(s) for lcu"
 jobs:
   build:
     runs-on: windows-latest
@@ -20,6 +25,15 @@ jobs:
           curl -LO https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso
           mkdir virtio-win
           tar -C virtio-win -xvf virtio-win.iso
+      - name: get lcu
+        if: ${{ inputs.lcu }}
+        env:
+          LCU: ${{ inputs.lcu }}
+        shell: cmd
+        run: |
+          mkdir lcu
+          cd lcu
+          FOR %%i IN (%LCU:,= %) DO curl -LO %%i
       - name: gather arm64 drivers
         shell: bash
         run: |
@@ -54,7 +68,15 @@ jobs:
         shell: cmd
         run: |
           ECHO powercfg /s 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c>>"${{ github.workspace }}\winpe_arm64\mount\windows\system32\startnet.cmd"
-      # TODO apply LCU?
+      - name: install lcu
+        if: ${{ inputs.lcu }}
+        shell: cmd
+        run: |
+          CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
+          CD /D "${{ github.workspace }}"
+          CD lcu
+          FOR %%i in (*.msu) DO DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Add-Package /PackagePath:%%i
+          DISM /Image:"${{ github.workspace}}\winpe_arm64\mount" /Cleanup-Image /StartComponentCleanup /ResetBase
       - name: unmountpe
         shell: cmd
         run: |

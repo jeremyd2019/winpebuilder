@@ -80,7 +80,7 @@ jobs:
           REM Windows 11 24H2 wants the latest lcu specified to PackagePath
           FOR %%i IN (lcu\*.msu) DO SET LCUMSU=%%i
           DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Add-Package /PackagePath:%LCUMSU%
-          DISM /Image:"${{ github.workspace}}\winpe_arm64\mount" /Cleanup-Image /StartComponentCleanup /ResetBase
+          DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Cleanup-Image /StartComponentCleanup /ResetBase
       - name: unmountpe
         shell: cmd
         run: |

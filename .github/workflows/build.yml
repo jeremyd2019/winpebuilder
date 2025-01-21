@@ -20,7 +20,7 @@ jobs:
           release: false
           update: true
           msystem: UCRT64
-          install: mingw-w64-ucrt-x86_64-qemu-image-util
+          install: mingw-w64-ucrt-x86_64-qemu-image-util openssh
       - name: install adk
         shell: cmd
         run: |
@@ -80,6 +80,11 @@ jobs:
         shell: cmd
         run: |
           ECHO powercfg /s 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c>>"${{ github.workspace }}\winpe_arm64\mount\windows\system32\startnet.cmd"
+      - name: start sshd on boot
+        shell: cmd
+        run: |
+          ECHO wpeutil DisableFirewall>>"${{ github.workspace }}\winpe_arm64\mount\windows\system32\startnet.cmd"
+          ECHO CALL c:\msys64\msys2_shell.cmd -defterm -no-start -msys2 -c "/usr/bin/sshd">>"${{ github.workspace }}\winpe_arm64\mount\windows\system32\startnet.cmd"
       - name: install lcu
         if: ${{ inputs.lcu }}
         shell: cmd
@@ -133,6 +138,14 @@ jobs:
         run: |
           curl -LO https://mirror.msys2.org/distrib/msys2-x86_64-latest.sfx.exe
           msys2-x86_64-latest.sfx.exe -y -oM:\
+      - name: install openssh in msys2 image
+        shell: msys2 {0}
+        run: |
+          pacman --noconfirm --noprogressbar -S --needed openssh --root /m/msys64
+          ssh-keygen -A -f /m/msys64
+          ssh-keygen -t ed25519 -f id_ed25519 -N ""
+          mkdir -p /m/msys64/home/SYSTEM/.ssh
+          cp id_ed25519.pub /m/msys64/home/SYSTEM/.ssh/authorized_keys
       - name: detach vhdx
         shell: diskpart /s {0}
         run: |
@@ -150,3 +163,5 @@ jobs:
             AAVMF_VARS.ms.fd
             qemu_aarch64_winpe.sh
             win11_arm64.qcow2
+            id_ed25519
+            id_ed25519.pub

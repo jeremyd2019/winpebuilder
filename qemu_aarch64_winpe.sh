@@ -17,5 +17,5 @@ qemu-system-aarch64 \
         -drive file=AAVMF_CODE.ms.fd,format=raw,if=pflash,index=0,readonly=on \
         -drive file=AAVMF_VARS.ms.fd,format=raw,if=pflash,index=1 \
         -net nic,model=virtio \
-        -net user \
+        -net user,hostfwd=tcp::2222-:22 \
         "$@"

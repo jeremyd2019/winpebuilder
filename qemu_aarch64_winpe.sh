@@ -6,6 +6,7 @@ qemu-system-aarch64 \
         -m 4096 \
         -smp 8 \
         -cpu cortex-a710 \
+        -rtc base=localtime \
         -serial stdio \
         -device ramfb \
         -device qemu-xhci \

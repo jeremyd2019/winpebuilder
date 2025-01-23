@@ -68,7 +68,10 @@ jobs:
         shell: bash
         run: |
           mkdir arm64
-          cd virtio-win && find . -path '*/w11/ARM64/*' -exec cp --parents '{}' ../arm64 \;
+          (cd virtio-win && find . -path '*/w11/ARM64/*' -exec cp --parents '{}' ../arm64 \;)
+          BSDTAR="$(cygpath -Su)/tar.exe"
+          mkdir -p arm64/serpl011
+          $BSDTAR -C arm64/serpl011 -xvf SerPL011.zip
       - name: copype
         shell: cmd
         run: |
@@ -150,6 +153,13 @@ jobs:
         run: |
           CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
           DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Cleanup-Image /StartComponentCleanup /ResetBase
+      - name: turn on ems
+        shell: cmd
+        run: |
+          CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
+          CD /D "${{ github.workspace }}"
+          bcdedit /store "${{ github.workspace }}\winpe_arm64\media\EFI\Microsoft\Boot\BCD" /ems {default} on
+          bcdedit /store "${{ github.workspace }}\winpe_arm64\media\EFI\Microsoft\Boot\BCD" /bootems {bootmgr} on
       - name: unmountpe
         shell: cmd
         run: |

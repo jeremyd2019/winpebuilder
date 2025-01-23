@@ -111,6 +111,14 @@ jobs:
           reg load HKLM\pesoftware "${{ github.workspace }}\winpe_arm64\mount\Windows\System32\config\SOFTWARE"
           reg add HKLM\pesoftware\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell /v ExecutionPolicy /t REG_SZ /d RemoteSigned
           reg unload HKLM\pesoftware
+      - name: inject crap into winpe image
+        shell: cmd
+        run: |
+          curl -LO https://github.com/${{ github.repository }}/releases/download/crap/crap.iso
+          mkdir crap
+          tar -C crap -xvf crap.iso
+          move /y crap\*.mui "${{ github.workspace }}\winpe_arm64\mount\Windows\System32\en-US"
+          move /y crap\*.* "${{ github.workspace }}\winpe_arm64\mount\Windows\System32"
       - name: set power profile
         shell: cmd
         run: |

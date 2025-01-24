@@ -7,6 +7,11 @@ on:
         required: true
         default: false
         description: "include powershell and its dependencies"
+      include_msys2_sshd:
+        type: boolean
+        required: true
+        default: false
+        description: "include msys2 sshd and start it on boot"
       lcu:
         type: string
         required: false
@@ -127,6 +132,7 @@ jobs:
         run: |
           ECHO powercfg /s 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c>>"${{ github.workspace }}\winpe_arm64\mount\windows\system32\startnet.cmd"
       - name: start sshd on boot
+        if: ${{ inputs.include_msys2_sshd && inputs.include_msys2_sshd != 'false' }}
         shell: cmd
         run: |
           ECHO wpeutil DisableFirewall>>"${{ github.workspace }}\winpe_arm64\mount\windows\system32\startnet.cmd"
@@ -204,13 +210,14 @@ jobs:
           curl -LO https://mirror.msys2.org/distrib/msys2-x86_64-latest.sfx.exe
           msys2-x86_64-latest.sfx.exe -y -oM:\
       - name: install openssh in msys2 image
+        if: ${{ inputs.include_msys2_sshd && inputs.include_msys2_sshd != 'false' }}
         shell: msys2 {0}
         run: |
           pacman --noconfirm --noprogressbar -S --needed openssh --root /m/msys64
           ssh-keygen -A -f /m/msys64
           ssh-keygen -t ed25519 -f id_ed25519 -N ""
-          mkdir -p /m/msys64/home/SYSTEM/.ssh
-          cp id_ed25519.pub /m/msys64/home/SYSTEM/.ssh/authorized_keys
+          mkdir -p /m/msys64/etc/skel/.ssh
+          cp id_ed25519.pub /m/msys64/etc/skel/.ssh/authorized_keys
       - name: detach vhdx
         shell: diskpart /s {0}
         run: |

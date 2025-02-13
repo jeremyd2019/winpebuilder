@@ -95,20 +95,22 @@ jobs:
           CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
           CD /D "${{ github.workspace }}"
           DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Add-Driver /Driver:"${{ github.workspace }}\arm64" /Recurse /ForceUnsigned
-      - name: add x64 optional component
+      - name: add x64 and wmi optional components
         shell: cmd
         run: |
           CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
           CD /D "${{ github.workspace }}"
-          DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Add-Package /PackagePath:"%WinPERoot%\arm64\WinPE_OCs\WinPE-x64-Support.cab"
-          DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Add-Package /PackagePath:"%WinPERoot%\arm64\WinPE_OCs\en-us\WinPE-x64-Support_en-us.cab"
+          FOR %%i IN (x64-Support WMI) DO (
+            DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Add-Package /PackagePath:"%WinPERoot%\arm64\WinPE_OCs\WinPE-%%i.cab"
+            DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Add-Package /PackagePath:"%WinPERoot%\arm64\WinPE_OCs\en-us\WinPE-%%i_en-us.cab"
+          )
       - name: add powershell optional components
         if: ${{ inputs.include_powershell && inputs.include_powershell != 'false' }}
         shell: cmd
         run: |
           CALL "%ProgramFiles(x86)%\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
           CD /D "${{ github.workspace }}"
-          FOR %%i IN (WMI NetFx Scripting PowerShell) DO (
+          FOR %%i IN (NetFx Scripting PowerShell) DO (
             DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Add-Package /PackagePath:"%WinPERoot%\arm64\WinPE_OCs\WinPE-%%i.cab"
             DISM /Image:"${{ github.workspace }}\winpe_arm64\mount" /Add-Package /PackagePath:"%WinPERoot%\arm64\WinPE_OCs\en-us\WinPE-%%i_en-us.cab"
           )

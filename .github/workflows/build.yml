@@ -200,7 +200,7 @@ jobs:
       - name: make vhdx
         shell: diskpart /s {0}
         run: |
-          CREATE VDISK FILE="D:\win11_arm64.vhdx" MAXIMUM=8192 TYPE=EXPANDABLE
+          CREATE VDISK FILE="${{ runner.temp }}\win11_arm64.vhdx" MAXIMUM=8192 TYPE=EXPANDABLE
           ATTACH VDISK
           CLEAN
           CREATE PARTITION PRIMARY
@@ -227,12 +227,12 @@ jobs:
       - name: detach vhdx
         shell: diskpart /s {0}
         run: |
-          SELECT VDISK FILE="D:\win11_arm64.vhdx"
+          SELECT VDISK FILE="${{ runner.temp }}\win11_arm64.vhdx"
           DETACH VDISK
       - name: convert to qcow2
         shell: msys2 {0}
         run: |
-          qemu-img convert -pc -f vhdx /d/win11_arm64.vhdx -O qcow2 win11_arm64.qcow2
+          qemu-img convert -pc -f vhdx $(cygpath -u '${{ runner.temp }}')/win11_arm64.vhdx -O qcow2 win11_arm64.qcow2
       - uses: actions/upload-artifact@v4
         with:
           path: |
